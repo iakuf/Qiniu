@@ -1,0 +1,6 @@
+lib/Qiniu.pm
+lib/Qiniu/Auth.pm
+lib/Qiniu/Storage.pm
+lib/Qiniu/Util.pm
+Makefile.PL
+MANIFEST			This list of files
