@@ -24,5 +24,8 @@ WriteMakefile(
   clean               => { FILES => 'Qiniu-*' },
   PREREQ_PM => {
     'Mojolicious' => '0',
+    'Moo' => '0',
+	'Digest::SHA' => 0,
+	'MIME::Base64' => 0,
   },
 );

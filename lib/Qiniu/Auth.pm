@@ -3,7 +3,7 @@ use strict;
 use Qiniu::Util qw/encode_json safe_b64_encode hmac_sha1/;
 use Moo;
 
-our $VERSION  = '0.04';
+our $VERSION  = '0.05';
 
 use constant DEFAULT_AUTH_SECONDS => 3600;
 

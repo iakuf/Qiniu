@@ -20,6 +20,11 @@ has rsapi => (
     default => sub {'http://rs.qiniu.com'},
 );
 
+has ua => (
+    is => 'rw',
+    default => sub { return Mojo::UserAgent->new },
+);
+
 has upapi => (
     is => 'rw',
     default => sub {'http://upload.qiniu.com'},
@@ -119,8 +124,7 @@ sub delete {
 
 sub rsget {
     my ($self, $op) = @_;
-    my $ua = Mojo::UserAgent->new;
-    $ua->on(start => sub {
+    $self->ua->on(start => sub {
         my ($ua, $tx) = @_;
         my $signingStr = $tx->req->url->path->to_string . "\n";
         if ($tx->req->body) {
@@ -131,7 +135,7 @@ sub rsget {
         $tx->req->headers->header('Authorization' => 'QBox ' . $manage_token);
     });
     my $opapi = $self->rsapi . $op;
-	return $ua->post( $opapi )->res->json;  
+	return $self->ua->post( $opapi )->res->json;  
 }
 
 sub split_range {
