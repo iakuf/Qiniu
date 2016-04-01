@@ -1,6 +1,6 @@
 package Qiniu;
 
-our $VERSION  = '0.03';
+our $VERSION  = '0.04';
 
 1;
 
@@ -27,7 +27,7 @@ __END__
         secret_key => $SecretKey,
     );
     
-    my $token  = $auth->UPLoadToken('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
+    my $token  = $auth->upload_token('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
         
     my $storage = Qiniu::Storage->new( 
         bucket => 'my-bucket',
@@ -35,20 +35,20 @@ __END__
     );
 
     # 直接上传
-    my $result = $storage->UPLoadFile($token, '/tmp/fukai.txt', "test");
+    my $result = $storage->upload_file($token, '/tmp/fukai.txt', "test");
 
     # 上传变量, 或者内存中的内容
-    my $result = $storage->UPLoadData($token, 'this is file', "test");
+    my $result = $storage->upload_data($token, 'this is file', "test");
 
     # 并发多线程流式上传
-    my $result = $storage->UPLoadStream($token, '/tmp/mp4', "test.mp4", "video/mp4");
+    my $result = $storage->upload_stream($token, '/tmp/mp4', "test.mp4", "video/mp4");
 
     # 私有文件下载
     my $authUrl = $auth->privateDownloadURL($baseUrl);
 
     # 资源操作
-    my $result = $storage->Stat("test_fukai.mp4");
-    my $result = $storage->Copy("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->stat("test_fukai.mp4");
+    my $result = $storage->copy("test_fukai.mp4", "kk.mp4");
     
 =head1 DESCRIPTION
 
@@ -80,19 +80,19 @@ __END__
 
 这个 token 需要使用认证的方法直接生成, 第一个参数为 token, 第二个参数为本地文件, 第三个参数为 key.
 
-    my $result = $storage->UPLoadFile($token, '/tmp/fukai.txt', "test");
+    my $result = $storage->upload_file($token, '/tmp/fukai.txt', "test");
 
 =head2 上传变量, 或者内存中的内容
 
 这个 token 需要使用认证的方法直接, 第二个参数为变量, 第三个参数为 key.
 
-    my $result = $storage->UPLoadData($token, 'this is file', "test");
+    my $result = $storage->upload_data($token, 'this is file', "test");
 
 =head2 并发多线程流式上传
     
 这个 token 需要使用认证的方法直接, 第二个参数为本地文件, 第三个参数为 key, 第三个参数为 mime 类型.
 
-    my $result = $storage->UPLoadStream($token, '/tmp/mp4', "test.mp4", "video/mp4");
+    my $result = $storage->upload_stream($token, '/tmp/mp4', "test.mp4", "video/mp4");
 
 =head1 下载
 
@@ -110,7 +110,7 @@ __END__
 
 私有资源必须通过临时下载授权凭证, 这个方法用于给传进来的下载地址进行方法的转换, 并加入下载 token 签名.
 
-    my $authUrl = $auth->privateDownloadURL($baseUrl);
+    my $authUrl = $auth->private_url($baseUrl);
 
 =head1 资源操作
 
@@ -125,25 +125,25 @@ __END__
 
 直接查询 new 的时候指定的 bucket 空间对的文件状态.
 
-    my $result = $storage->Stat("test_fukai.mp4");
+    my $result = $storage->stat("test_fukai.mp4");
 
 =head2 复制文件 
 
 复制 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Copy("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->copy("test_fukai.mp4", "kk.mp4");
 
 =head2 移动文件 
 
 移动 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Move("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->move("test_fukai.mp4", "kk.mp4");
 
 =head2 删除文件
 
 删除 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Delete("test_fukai.mp4");
+    my $result = $storage->delete("test_fukai.mp4");
 
 =head1 SEE ALSO
 

@@ -3,7 +3,7 @@ use strict;
 use Qiniu::Util qw/encode_json safe_b64_encode hmac_sha1/;
 use Moo;
 
-our $VERSION  = '0.03';
+our $VERSION  = '0.04';
 
 use constant DEFAULT_AUTH_SECONDS => 3600;
 
@@ -38,7 +38,7 @@ has Fields => (
     }
 );
 
-sub UPLoadToken {
+sub upload_token {
     my ($self, $bucket, $key, $expires_in, $args) = @_;
     
     die "need bucket" if !$bucket;
@@ -64,7 +64,7 @@ sub PUTPolicy {
     return encode_json(\%args) 
 }
 
-sub privateDownloadURL {
+sub private_url {
     my $self = shift;
     my $download_url = shift;
     my $e = time()+3600;
@@ -129,7 +129,7 @@ __END__
         secret_key => $SecretKey,
     );
     
-    my $token  = $auth->UPLoadToken('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
+    my $token  = $auth->upload_token('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
 
 =head1 DESCRIPTION
 
@@ -147,11 +147,11 @@ __END__
 
 =head1 方法 
 
-=head2 UPLoadToken
+=head2 upload_toke
 
 取得上传的 token. 第一个参数是 bucket 的名字空间, 第二个参数是 key , 第三个参数是 token 的过期时间, 第三个参数是一些 L<上传策略|http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html>
 
-   my $token  = $auth->UPLoadToken('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
+   my $token  = $auth->upload_token('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
 
 关于上传策略更完整的说明,请参考 L<上传凭证|http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html>。
 
@@ -172,7 +172,7 @@ __END__
 
 私有资源必须通过临时下载授权凭证, 这个方法用于给传进来的下载地址进行方法的转换, 并加入下载 token 签名.
 
-    my $authUrl = $auth->privateDownloadURL($baseUrl);
+    my $authUrl = $auth->private_url($baseUrl);
 
 =head1 SEE ALSO
 

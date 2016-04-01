@@ -26,7 +26,7 @@ has upapi => (
 );
 
 
-sub UPLoadFile {
+sub upload_file {
     my ($self, $token, $local_file, $key ) = @_;
     my $ua = Mojo::UserAgent->new;
     return $ua->post($self->upapi => form => {
@@ -38,7 +38,7 @@ sub UPLoadFile {
     )->res->json;
 }
 
-sub UPLoadData {
+sub upload_data {
     my ($self, $token, $data, $key ) = @_;
     my $ua = Mojo::UserAgent->new;
     return $ua->post($self->upapi => form => {
@@ -50,7 +50,7 @@ sub UPLoadData {
     )->res->json;
 }
 
-sub UPLoadStream  {
+sub upload_stream  {
     my ($self, $token, $local_file, $key, $mimetype) = @_;
     my $ua = Mojo::UserAgent->new;
     my $file = Mojo::Asset::File->new(path => $local_file);
@@ -93,31 +93,31 @@ sub UPLoadStream  {
 
 }
 
-sub Stat {
+sub stat {
     my $self = shift;
     my $op = '/stat/' . encoded_entry_uri($self->bucket, shift);
-    return $self->rsget($op);
+	return $self->rsget($op);
 }
 
-sub Copy {
+sub copy {
     my $self = shift;
     my $op = '/copy/' . encoded_entry_uri($self->bucket, $_[0]) . '/' . encoded_entry_uri($self->bucket, $_[1]);
     return $self->rsget($op);
 }
 
-sub Move {
+sub move {
     my $self = shift;
     my $op = '/move/' . encoded_entry_uri($self->bucket, $_[0]) . '/' . encoded_entry_uri($self->bucket, $_[1]);
     return $self->rsget($op);
 }
 
-sub Delete {
+sub delete {
     my $self = shift;
     my $op = '/delete/' . encoded_entry_uri($self->bucket, shift);
     return $self->rsget($op);
 }
 
-sub RSGet {
+sub rsget {
     my ($self, $op) = @_;
     my $ua = Mojo::UserAgent->new;
     $ua->on(start => sub {
@@ -131,7 +131,7 @@ sub RSGet {
         $tx->req->headers->header('Authorization' => 'QBox ' . $manage_token);
     });
     my $opapi = $self->rsapi . $op;
-    return $ua->post( $opapi )->res->json;  
+	return $ua->post( $opapi )->res->json;  
 }
 
 sub split_range {
