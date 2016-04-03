@@ -19,7 +19,7 @@
 #     LICENSE => q[perl]
 #     META_MERGE => { no_index=>{ directory=>[q[t]] }, requires=>{ perl=>q[5.010001] }, resources=>{ bugtracker=>q[https://github.com/iakuf/Qiniu/issues], repository=>q[https://github.com/iakuf/Qiniu.git] } }
 #     NAME => q[Qiniu]
-#     PREREQ_PM => { Mojolicious=>q[0] }
+#     PREREQ_PM => { Digest::SHA=>q[0], MIME::Base64=>q[0], Mojolicious=>q[0], Moo=>q[0] }
 #     TEST_REQUIRES => {  }
 #     VERSION_FROM => q[lib/Qiniu.pm]
 #     clean => { FILES=>q[Qiniu-*] }
@@ -62,11 +62,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = Qiniu
 NAME_SYM = Qiniu
-VERSION = 0.04
+VERSION = 0.05
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_04
+VERSION_SYM = 0_05
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.04
+XS_VERSION = 0.05
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -275,7 +275,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = Qiniu
-DISTVNAME = Qiniu-0.04
+DISTVNAME = Qiniu-0.05
 
 
 # --- MakeMaker macro section:
@@ -521,12 +521,15 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '    - inc' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - t' >> META_new.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Digest::SHA: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  MIME::Base64: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  Mojolicious: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Moo: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  perl: '\''5.010001'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'resources:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  bugtracker: https://github.com/iakuf/Qiniu/issues' >> META_new.yml
 	$(NOECHO) $(ECHO) '  repository: https://github.com/iakuf/Qiniu.git' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version: '\''0.04'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version: '\''0.05'\''' >> META_new.yml
 	-$(NOECHO) $(MV) META_new.yml $(DISTVNAME)/META.yml
 	$(NOECHO) $(ECHO) Generating META.json
 	$(NOECHO) $(ECHO) '{' > META_new.json
@@ -564,7 +567,10 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '      },' >> META_new.json
 	$(NOECHO) $(ECHO) '      "runtime" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Digest::SHA" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "MIME::Base64" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "Mojolicious" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Moo" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "perl" : "5.010001"' >> META_new.json
 	$(NOECHO) $(ECHO) '         }' >> META_new.json
 	$(NOECHO) $(ECHO) '      }' >> META_new.json
@@ -578,7 +584,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '         "url" : "https://github.com/iakuf/Qiniu.git"' >> META_new.json
 	$(NOECHO) $(ECHO) '      }' >> META_new.json
 	$(NOECHO) $(ECHO) '   },' >> META_new.json
-	$(NOECHO) $(ECHO) '   "version" : "0.04"' >> META_new.json
+	$(NOECHO) $(ECHO) '   "version" : "0.05"' >> META_new.json
 	$(NOECHO) $(ECHO) '}' >> META_new.json
 	-$(NOECHO) $(MV) META_new.json $(DISTVNAME)/META.json
 
@@ -883,7 +889,10 @@ ppd :
 	$(NOECHO) $(ECHO) '    <ABSTRACT>Perl çä¸çäºå­å¨ API</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>fukai (æ¶å¯) &lt;iakuf@163.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Digest::SHA" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="MIME::Base64" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Mojolicious::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Moo::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-5.22" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd

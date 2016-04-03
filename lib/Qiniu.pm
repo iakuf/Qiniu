@@ -1,6 +1,6 @@
 package Qiniu;
 
-our $VERSION  = '0.05';
+our $VERSION  = '0.06';
 
 1;
 
@@ -44,11 +44,18 @@ __END__
     my $result = $storage->upload_stream($token, '/tmp/mp4', "test.mp4", "video/mp4");
 
     # 私有文件下载
-    my $authUrl = $auth->privateDownloadURL($baseUrl);
+    my $authUrl = $auth->private_url($baseUrl);
 
     # 资源操作
     my $result = $storage->stat("test_fukai.mp4");
     my $result = $storage->copy("test_fukai.mp4", "kk.mp4");
+
+	# 列出文件
+	my $result;
+	do {
+		$result = $storage->list({prefix => 'mp4', limit => 2, marker => $result->{marker}});
+	}
+	while ($result->{marker});
     
 =head1 DESCRIPTION
 
@@ -144,6 +151,21 @@ __END__
 删除 new 的时候指定的 bucket 内的文件.
 
     my $result = $storage->delete("test_fukai.mp4");
+
+=head2 列出文件
+
+列出本 bucket 中的所有文件
+
+	my $result;
+	do {
+		$result = $storage->list({prefix => 'mp4', limit => 2, marker => $result->{marker}});
+		for my $item ( @{ $result->{items} } ) {
+			say $item->{key};
+		}
+	}
+	while ($result->{marker});
+
+正常可以使用上面的例子中的语句就能得出所有的文件，默认上面例子是一次查询 2 条，可以写 1000.
 
 =head1 SEE ALSO
 

@@ -18,7 +18,7 @@ sub safe_b64_encode {
 
 sub encoded_entry_uri {
     my ($bucket, $key) = @_;
-    my $entry = "$bucket:$key";
+    my $entry = $key ? "$bucket:$key" : $bucket;
     return safe_b64_encode($entry);
 }
 

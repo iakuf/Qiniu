@@ -5,7 +5,7 @@ use Mojo::UserAgent;
 use Mojo::Asset::File;
 use Qiniu::Util qw/safe_b64_encode encoded_entry_uri/;
 
-our $VERSION  = '0.03';
+our $VERSION  = '0.06';
 
 has auth  => (
     is => 'ro',
@@ -122,11 +122,22 @@ sub delete {
     return $self->rsget($op);
 }
 
-sub rsget {
-    my ($self, $op) = @_;
-    $self->ua->on(start => sub {
+sub list {
+	my $self = shift;
+	my $args = shift;
+
+	$args->{bucket} ||= $self->bucket;
+	my $params = Mojo::Parameters->new(%$args);
+	my $url = "http://rsf.qbox.me/list?" . $params->to_string;
+	$self->register_token($self->ua);
+	return $self->ua->post( $url )->res->json;  
+}
+
+sub register_token {
+	my ($self, $ua) = (shift, shift);
+	$ua->on(start => sub {
         my ($ua, $tx) = @_;
-        my $signingStr = $tx->req->url->path->to_string . "\n";
+        my $signingStr = $tx->req->url->path_query . "\n";
         if ($tx->req->body) {
             $signingStr = $signingStr . "\n" . $tx->req->body;
             $tx->req->headers->header('Content-Type' => 'application/x-www-form-urlencoded');
@@ -134,6 +145,12 @@ sub rsget {
         my $manage_token = $self->auth->manage_token($signingStr);
         $tx->req->headers->header('Authorization' => 'QBox ' . $manage_token);
     });
+}
+
+# 资源操作接口
+sub rsget {
+    my ($self, $op) = @_;
+	$self->register_token($self->ua);
     my $opapi = $self->rsapi . $op;
 	return $self->ua->post( $opapi )->res->json;  
 }
@@ -187,6 +204,7 @@ __END__
 
     use Qiniu::Storage;
     use Qiniu::Auth;
+	use 5.010;
     
     my $SecretKey = 'xx';
     my $AccessKey = 'oo';
@@ -196,7 +214,7 @@ __END__
         secret_key => $SecretKey,
     );
     
-    my $token  = $auth->UPLoadToken('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
+    my $token  = $auth->upload_token('my-bucket', 'test', 3600, {  returnBody =>  '{ "name": $(fname),  "size": $(fsize)}' });
         
     my $storage = Qiniu::Storage->new( 
         bucket => 'my-bucket',
@@ -204,17 +222,27 @@ __END__
     );
 
     # 直接上传
-    my $result = $storage->UPLoadFile($token, '/tmp/fukai.txt', "test");
+    my $result = $storage->upload_file($token, '/tmp/fukai.txt', "test");
 
     # 上传变量, 或者内存中的内容
-    my $result = $storage->UPLoadData($token, 'this is file', "test");
+    my $result = $storage->upload_data($token, 'this is file', "test");
 
     # 并发多线程流式上传
-    my $result = $storage->UPLoadStream($token, '/tmp/mp4', "test.mp4", "video/mp4");
+    my $result = $storage->upload_stream($token, '/tmp/mp4', "test.mp4", "video/mp4");
 
     # 资源操作
-    my $result = $storage->Stat("test_fukai.mp4");
-    my $result = $storage->Copy("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->stat("test_fukai.mp4");
+    my $result = $storage->copy("test_fukai.mp4", "kk.mp4");
+
+	# 列出所有文件
+	my $result;
+	do {
+		$result = $storage->list({prefix => 'mp4', limit => 2, marker => $result->{marker}});
+		for my $item ( @{ $result->{items} } ) {
+			say $item->{key};
+		}
+	}
+	while ($result->{marker});
     
 =head1 DESCRIPTION
 
@@ -246,19 +274,19 @@ __END__
 
 这个 token 需要使用认证的方法直接生成, 第一个参数为 token, 第二个参数为本地文件, 第三个参数为 key.
 
-    my $result = $storage->UPLoadFile($token, '/tmp/fukai.txt', "test");
+    my $result = $storage->upload_file($token, '/tmp/fukai.txt', "test");
 
 =head2 上传变量, 或者内存中的内容
 
 这个 token 需要使用认证的方法直接, 第二个参数为变量, 第三个参数为 key.
 
-    my $result = $storage->UPLoadData($token, 'this is file', "test");
+    my $result = $storage->upload_data($token, 'this is file', "test");
 
 =head2 并发多线程流式上传
     
 这个 token 需要使用认证的方法直接, 第二个参数为本地文件, 第三个参数为 key, 第三个参数为 mime 类型.
 
-    my $result = $storage->UPLoadStream($token, '/tmp/mp4', "test.mp4", "video/mp4");
+    my $result = $storage->upload_stream($token, '/tmp/mp4', "test.mp4", "video/mp4");
 
 =head1 资源操作
 
@@ -273,25 +301,40 @@ __END__
 
 直接查询 new 的时候指定的 bucket 空间对的文件状态.
 
-    my $result = $storage->Stat("test_fukai.mp4");
+    my $result = $storage->stat("test_fukai.mp4");
 
 =head2 复制文件 
 
 复制 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Copy("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->copy("test_fukai.mp4", "kk.mp4");
 
 =head2 移动文件 
 
 移动 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Move("test_fukai.mp4", "kk.mp4");
+    my $result = $storage->move("test_fukai.mp4", "kk.mp4");
 
 =head2 删除文件
 
 删除 new 的时候指定的 bucket 内的文件.
 
-    my $result = $storage->Delete("test_fukai.mp4");
+    my $result = $storage->delete("test_fukai.mp4");
+
+=head2 列出文件
+
+列出本 bucket 中的所有文件
+
+	my $result;
+	do {
+		$result = $storage->list({prefix => 'mp4', limit => 2, marker => $result->{marker}});
+		for my $item ( @{ $result->{items} } ) {
+			say $item->{key};
+		}
+	}
+	while ($result->{marker});
+
+正常可以使用上面的例子中的语句就能得出所有的文件，默认上面例子是一次查询 2 条，可以写 1000.
 
 =head1 SEE ALSO
 
