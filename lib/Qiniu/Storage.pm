@@ -49,8 +49,9 @@ sub upload_data {
     return $ua->post($self->upapi => form => {
         key       => $key,
         token     => $token,
-        content => { 
-            content => $data 
+        file => { 
+			filename => $key,
+            content  => $data, 
         }}
     )->res->json;
 }
@@ -130,7 +131,15 @@ sub list {
 	my $params = Mojo::Parameters->new(%$args);
 	my $url = "http://rsf.qbox.me/list?" . $params->to_string;
 	$self->register_token($self->ua);
-	return $self->ua->post( $url )->res->json;  
+	my $tx = $self->ua->post($url);
+	if (my $res = $tx->success) {
+		return $res->json;  
+	}
+	else {
+		my $err = $tx->error;
+		return "$err->{code} response: $err->{message}" if $err->{code};
+		return "Connection error: $err->{message}";
+	}
 }
 
 sub register_token {
